@@ -17,11 +17,3 @@ function calculateAge(p) {
 
 }
 export { calculateAge };
-
-/*
-git add .
-git commit -m "Activité 1 - validator + tests"
-git tag activite_1
-git push
-git push --tags
- */
