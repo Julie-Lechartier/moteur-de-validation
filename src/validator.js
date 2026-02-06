@@ -11,7 +11,7 @@ function validateAge(birthDate) {
     return { valid: false, errorCode: 'INVALID_BIRTHDATE' };
   }
 
-  const age = calculateAge({ birth: birthDate });
+  let age = calculateAge({ birth: birthDate });
 
   if (age < 18) {
     return { valid: false, errorCode: 'AGE_UNDER_18' };
@@ -31,7 +31,7 @@ function validatePostalCode(postalCode) {
     return { valid: false, errorCode: 'INVALID_TYPE' };
   }
 
-  const regex = /^[0-9]{5}$/;
+  let regex = /^[0-9]{5}$/;
 
   if (!regex.test(postalCode)) {
     return { valid: false, errorCode: 'INVALID_POSTAL_CODE' };
@@ -57,7 +57,7 @@ function validateIdentity(identity) {
     return { valid: false, errorCode: 'XSS_DETECTED' };
   }
 
-  const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\- ]+$/u;
+  let regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\- ]+$/u;
 
   if (!regex.test(identity)) {
     return { valid: false, errorCode: 'INVALID_IDENTITY' };
@@ -77,7 +77,7 @@ function validateEmail(email) {
     return { valid: false, errorCode: 'INVALID_TYPE' };
   }
 
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!regex.test(email)) {
     return { valid: false, errorCode: 'INVALID_EMAIL' };
@@ -97,29 +97,29 @@ function validateForm(data) {
     return { valid: false, errors: ['INVALID_PAYLOAD'] };
   }
 
-  const errors = [];
+  let errors = [];
 
-  const ageResult = validateAge(data.birth);
+  let ageResult = validateAge(data.birth);
   if (!ageResult.valid) {
     errors.push(ageResult.errorCode);
   }
 
-  const postalResult = validatePostalCode(data.postalCode);
+  let postalResult = validatePostalCode(data.postalCode);
   if (!postalResult.valid) {
     errors.push(postalResult.errorCode);
   }
 
-  const firstNameResult = validateIdentity(data.firstName);
+  let firstNameResult = validateIdentity(data.firstName);
   if (!firstNameResult.valid) {
     errors.push(`FIRSTNAME_${firstNameResult.errorCode}`);
   }
 
-  const lastNameResult = validateIdentity(data.lastName);
+  let lastNameResult = validateIdentity(data.lastName);
   if (!lastNameResult.valid) {
     errors.push(`LASTNAME_${lastNameResult.errorCode}`);
   }
 
-  const emailResult = validateEmail(data.email);
+  let emailResult = validateEmail(data.email);
   if (!emailResult.valid) {
     errors.push(emailResult.errorCode);
   }

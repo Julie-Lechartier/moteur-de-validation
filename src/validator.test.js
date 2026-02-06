@@ -10,20 +10,20 @@ import { describe, it, expect } from '@jest/globals';
 // age
 describe('validateAge', () => {
   it('should accept age 18', () => {
-    const now = new Date();
-    const birthYear = now.getFullYear() - 18;
-    const birthDate = new Date(birthYear, now.getMonth(), now.getDate());
+    let now = new Date();
+    let birthYear = now.getFullYear() - 18;
+    let birthDate = new Date(birthYear, now.getMonth(), now.getDate());
 
-    const result = validateAge(birthDate);
+    let result = validateAge(birthDate);
     expect(result.valid).toBe(true);
   });
 
   it('should reject age under 18', () => {
-    const now = new Date();
-    const birthYear = now.getFullYear() - 17;
-    const birthDate = new Date(birthYear, now.getMonth(), now.getDate());
+    let now = new Date();
+    let birthYear = now.getFullYear() - 17;
+    let birthDate = new Date(birthYear, now.getMonth(), now.getDate());
 
-    const result = validateAge(birthDate);
+    let result = validateAge(birthDate);
     expect(result.valid).toBe(false);
     expect(result.errorCode).toBe('AGE_UNDER_18');
   });
@@ -40,7 +40,7 @@ describe('validatePostalCode', () => {
   });
 
   it('should reject when not 5 number', () => {
-    const res1 = validatePostalCode('6900');
+    let res1 = validatePostalCode('6900');
     expect(res1.valid).toBe(false);
     expect(res1.errorCode).toBe('INVALID_POSTAL_CODE');
 
@@ -55,13 +55,19 @@ describe('validateIdentity', () => {
   });
 
   it('should reject bad chars', () => {
-    const res = validateIdentity('Jean@Doe');
+    let res = validateIdentity('Jean@Doe');
+    expect(res.valid).toBe(false);
+    expect(res.errorCode).toBe('INVALID_IDENTITY');
+  });
+
+  it('should reject identity with digits', () => {
+    let res = validateIdentity('Jean123');
     expect(res.valid).toBe(false);
     expect(res.errorCode).toBe('INVALID_IDENTITY');
   });
 
   it('should reject HTML tags', () => {
-    const res = validateIdentity('<script>alert(1)</script>');
+    let res = validateIdentity('<script>alert(1)</script>');
     expect(res.valid).toBe(false);
     expect(res.errorCode).toBe('XSS_DETECTED');
   });
@@ -74,7 +80,7 @@ describe('validateEmail', () => {
   });
 
   it('should reject invalid email', () => {
-    const res = validateEmail('invalid-email');
+    let res = validateEmail('invalid-email');
     expect(res.valid).toBe(false);
     expect(res.errorCode).toBe('INVALID_EMAIL');
   });
@@ -82,10 +88,12 @@ describe('validateEmail', () => {
 
 // all fields in form
 describe('validateForm', () => {
+  let now = new Date();
+  let birthYear = now.getFullYear() - 25;
+
   it('should return valid=true for a correct payload', () => {
-    const now = new Date();
-    const birthYear = now.getFullYear() - 25;
-    const user = {
+
+    let user = {
       birth: new Date(birthYear, now.getMonth(), now.getDate()),
       postalCode: '69001',
       firstName: 'admin',
@@ -93,13 +101,13 @@ describe('validateForm', () => {
       email: 'admin.text@test.com',
     };
 
-    const res = validateForm(user);
+    let res = validateForm(user);
     expect(res.valid).toBe(true);
     expect(res.errors).toEqual([]);
   });
 
   it('should aggregate errors for invalid payload', () => {
-    const user = {
+    let user = {
       birth: new Date('invalid'),
       postalCode: '0100O',
       firstName: '<script>Test</script>',
@@ -107,13 +115,13 @@ describe('validateForm', () => {
       email: 'test.com',
     };
 
-    const res = validateForm(user);
+    let res = validateForm(user);
     expect(res.valid).toBe(false);
     expect(res.errors.length).toBeGreaterThan(0);
   });
 
   it('should reject null payload', () => {
-    const res = validateForm(null);
+    let res = validateForm(null);
     expect(res.valid).toBe(false);
     expect(res.errors).toContain('INVALID_PAYLOAD');
   });
