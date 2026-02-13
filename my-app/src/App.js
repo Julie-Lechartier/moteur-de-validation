@@ -13,6 +13,12 @@ function App() {
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
 
+  /**
+   * Valide un champ individuellement
+   * @param {string} name
+   * @param {string} value
+   * @returns {string}
+   */
   const validateField = (name, value) => {
     switch (name) {
       case 'lastName':
@@ -34,6 +40,10 @@ function App() {
     }
   };
 
+  /**
+   * Bloque les caractères non autorisés dans les noms/villes
+   * @param {Object} e
+   */
   const handleKeyDown = (e) => {
     const { name } = e.target;
     if (name === 'lastName' || name === 'firstName' || name === 'city') {
@@ -44,17 +54,29 @@ function App() {
       }
     }
   };
+  /**
+   * Gère la saisie utilisateur et met à jour le state + validation temps réel
+   * @param {Object} e
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
+  /**
+   * Valide au focus out (quand utilisateur quitte le champ)
+   * @param {Object} e
+   */
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
+  /**
+   * Soumet le formulaire si valide → localStorage + toaster + reset
+   * @param {Object} e
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     const isValid =
@@ -93,7 +115,7 @@ function App() {
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder="Test"
-            maxLength="50"
+            data-testid="firstName-input"
           />
           {errors.firstName && (
             <span className="error">{errors.firstName}</span>
@@ -107,8 +129,8 @@ function App() {
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
+            data-testid="lastName-input"
             placeholder="Doe"
-            maxLength="50"
           />
           {errors.lastName && <span className="error">{errors.lastName}</span>}
         </div>
@@ -116,6 +138,7 @@ function App() {
           <label>Email *</label>
           <input
             name="email"
+            data-testid="email-input" //
             type="email"
             value={formData.email}
             onChange={handleChange}
@@ -128,6 +151,7 @@ function App() {
           <label>Date de naissance *</label>
           <input
             name="birthDate"
+            data-testid="birth-input"
             type="date"
             value={formData.birthDate}
             onChange={handleChange}
@@ -146,6 +170,7 @@ function App() {
           <label>Code postal *</label>
           <input
             name="postalCode"
+            data-testid="postalCode-input"
             value={formData.postalCode}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -160,6 +185,7 @@ function App() {
           <label>Ville</label>
           <input
             name="city"
+            data-testid="ville-input"
             value={formData.city}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -168,7 +194,9 @@ function App() {
           />
           {errors.city && <span className="error">{errors.city}</span>}
         </div>
-        <button type="submit" disabled={!isFormValid}>S'inscrire</button>
+        <button type="submit" disabled={!isFormValid}>
+          S'inscrire
+        </button>
       </form>
       {showSuccess && <div className="success-toast">Inscription réussie</div>}
     </div>
