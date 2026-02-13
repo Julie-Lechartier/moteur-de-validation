@@ -1,38 +1,84 @@
 .App {
+  max-width: 500px;
+  margin: 2em auto;
+  padding: 2em;
+  font-family: system-ui, sans-serif;
+}
+
+h1 {
   text-align: center;
+  color: #1f2937;
+  margin-bottom: 2em;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.field-group {
+  margin-bottom: 1.5em;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: #374151;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+input {
+  width: 100%;
+  padding: 0.75em;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.error {
+  color: #dc2626 !important;
+  font-size: 0.875em;
+  margin-top: 0.25em;
+  display: block;
+  font-weight: 500;
+}
+
+button {
+  width: 100%;
+  padding: 1em;
+  background: #10b981;
   color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
+button:hover:not(:disabled) {
+  background: #059669;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.success-toast {
+  background: #10b981;
+  color: white;
+  padding: 1em;
+  margin-top: 1.5em;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
