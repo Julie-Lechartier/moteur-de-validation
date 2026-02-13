@@ -126,3 +126,33 @@ describe('validateForm', () => {
     expect(res.errors).toContain('INVALID_PAYLOAD');
   });
 });
+
+describe('isFormValid', () => {
+  it('should return true for a valid form', () => {
+    const now = new Date();
+    const birthYear = now.getFullYear() - 25;
+
+    const user = {
+      birth: new Date(birthYear, now.getMonth(), now.getDate()),
+      postalCode: '69001',
+      firstName: 'admin',
+      lastName: 'Test',
+      email: 'admin.text@test.com',
+    };
+
+    expect(isFormValid(user)).toBe(true);
+  });
+
+  it('should return false for an invalid form', () => {
+    const user = {
+      birth: new Date('invalid'),
+      postalCode: '0100O',
+      firstName: '<script>Test</script>',
+      lastName: 'T3st',
+      email: 'test.com',
+    };
+
+    expect(isFormValid(user)).toBe(false);
+  });
+});
+

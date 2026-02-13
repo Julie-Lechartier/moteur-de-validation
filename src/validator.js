@@ -1,10 +1,11 @@
 import { calculateAge } from './module.js';
 
 /**
- * Invalidate age under 18
+ * Validates a person's age from a birth date.
+ * Returns an error if the age is under 18.
  *
- * @param {Date} birthDate
- * @returns {{ valid: boolean, errorCode?: string }}
+ * @param {Date} birthDate - The person's birth date.
+ * @returns {{ valid: boolean, errorCode: string|undefined }} Validation result.
  */
 function validateAge(birthDate) {
   if (!(birthDate instanceof Date) || isNaN(birthDate.getTime())) {
@@ -21,10 +22,10 @@ function validateAge(birthDate) {
 }
 
 /**
- * french postal code
+ * Validates a French postal code (5 digits).
  *
- * @param {string} postalCode
- * @returns {{ valid: boolean, errorCode?: string }}
+ * @param {string} postalCode - The postal code to validate.
+ * @returns {{ valid: boolean, errorCode: string|undefined }} Validation result.
  */
 function validatePostalCode(postalCode) {
   if (typeof postalCode !== 'string') {
@@ -41,18 +42,19 @@ function validatePostalCode(postalCode) {
 }
 
 /**
- * FirstName, LastName :
+ * Validates a first name or last name.
+ * Allows letters, accents, spaces and hyphens.
+ * Returns an error for HTML tags or invalid characters.
  *
- *
- * @param {string} identity
- * @returns {{ valid: boolean, errorCode?: string }}
+ * @param {string} identity - The name to validate.
+ * @returns {{ valid: boolean, errorCode: string|undefined }} Validation result.
  */
 function validateIdentity(identity) {
   if (typeof identity !== 'string') {
     return { valid: false, errorCode: 'INVALID_TYPE' };
   }
 
-  // petite protection XSS
+  // Basic XSS protection
   if (/<[^>]*>/.test(identity)) {
     return { valid: false, errorCode: 'XSS_DETECTED' };
   }
@@ -67,10 +69,10 @@ function validateIdentity(identity) {
 }
 
 /**
- * Email
+ * Validates an email address.
  *
- * @param {string} email
- * @returns {{ valid: boolean, errorCode?: string }}
+ * @param {string} email - The email to validate.
+ * @returns {{ valid: boolean, errorCode: string|undefined }} Validation result.
  */
 function validateEmail(email) {
   if (typeof email !== 'string') {
@@ -87,10 +89,10 @@ function validateEmail(email) {
 }
 
 /**
- * All form
+ * Validates a full form payload.
  *
- * @param {{ birth: Date, postalCode: string, firstName: string, lastName: string, email: string }} data
- * @returns {{ valid: boolean, errors: string[] }}
+ * @param {{ birth: Date, postalCode: string, firstName: string, lastName: string, email: string }} data - Form data to validate.
+ * @returns {{ valid: boolean, errors: string[] }} Global validation result.
  */
 function validateForm(data) {
   if (!data || typeof data !== 'object') {
@@ -130,10 +132,22 @@ function validateForm(data) {
   };
 }
 
+/**
+ * Global validator: returns true if the form is valid.
+ *
+ * @param {{ birth: Date, postalCode: string, firstName: string, lastName: string, email: string }} data - Form data to validate.
+ * @returns {boolean} True if the form is valid, false otherwise.
+ */
+function isFormValid(data) {
+  const result = validateForm(data);
+  return result.valid;
+}
+
 export {
   validateAge,
   validatePostalCode,
   validateIdentity,
   validateEmail,
   validateForm,
+  isFormValid,
 };
