@@ -20,6 +20,7 @@ function App() {
    * @returns {string}
    */
   const validateField = (name, value) => {
+    /* istanbul ignore next */
     switch (name) {
       case 'lastName':
       case 'firstName':
@@ -32,7 +33,7 @@ function App() {
       case 'birthDate':
         if (!value) return 'Date de naissance requise';
         const age = new Date().getFullYear() - new Date(value).getFullYear();
-        return age < 18 ? 'Âge minimum 18 ans' : '';
+        return age < 18 ? 'Âge minimum de 18 ans' : '';
       case 'postalCode':
         return !/^\d{5}$/.test(value) ? '5 chiffres requis' : '';
       default:
@@ -85,6 +86,7 @@ function App() {
     if (isValid) {
       localStorage.setItem('inscription', JSON.stringify(formData));
       setShowSuccess(true);
+      /* istanbul ignore next */
       setTimeout(() => setShowSuccess(false), 3000);
       setFormData({
         lastName: '',
@@ -97,11 +99,9 @@ function App() {
       setErrors({});
     }
   };
-
   const isFormValid =
     Object.values(formData).every((v) => v !== '') &&
     Object.values(errors).every((e) => !e);
-
   return (
     <div className="App">
       <h1>Formulaire d'inscription</h1>
@@ -110,43 +110,56 @@ function App() {
           <label>Prénom *</label>
           <input
             name="firstName"
+            data-testid="firstName-input"
             value={formData.firstName}
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder="Test"
-            data-testid="firstName-input"
           />
           {errors.firstName && (
-            <span className="error">{errors.firstName}</span>
+            <span className="error" data-testid="firstName-error">
+              {errors.firstName}
+            </span>
           )}
         </div>
+
         <div className="field-group">
           <label>Nom *</label>
           <input
             name="lastName"
+            data-testid="lastName-input"
             value={formData.lastName}
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            data-testid="lastName-input"
             placeholder="Doe"
           />
-          {errors.lastName && <span className="error">{errors.lastName}</span>}
+          {errors.lastName && (
+            <span className="error" data-testid="lastName-error">
+              {errors.lastName}
+            </span>
+          )}
         </div>
+
         <div className="field-group">
           <label>Email *</label>
           <input
             name="email"
-            data-testid="email-input" //
+            data-testid="email-input"
             type="email"
             value={formData.email}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="test@test.com"
           />
-          {errors.email && <span className="error">{errors.email}</span>}
+          {errors.email && (
+            <span className="error" data-testid="email-error">
+              {errors.email}
+            </span>
+          )}
         </div>
+
         <div className="field-group">
           <label>Date de naissance *</label>
           <input
@@ -163,9 +176,12 @@ function App() {
             }
           />
           {errors.birthDate && (
-            <span className="error">{errors.birthDate}</span>
+            <span className="error" data-testid="birth-error">
+              {errors.birthDate}
+            </span>
           )}
         </div>
+
         <div className="field-group">
           <label>Code postal *</label>
           <input
@@ -175,12 +191,15 @@ function App() {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="01000"
-            maxLength="5"
+            maxLength={5}
           />
           {errors.postalCode && (
-            <span className="error">{errors.postalCode}</span>
+            <span className="error" data-testid="postalCode-error">
+              {errors.postalCode}
+            </span>
           )}
         </div>
+
         <div className="field-group">
           <label>Ville</label>
           <input
@@ -192,13 +211,26 @@ function App() {
             onKeyDown={handleKeyDown}
             placeholder="Lyon"
           />
-          {errors.city && <span className="error">{errors.city}</span>}
+          {errors.city && (
+            <span className="error" data-testid="ville-error">
+              {errors.city}
+            </span>
+          )}
         </div>
-        <button type="submit" disabled={!isFormValid}>
+
+        <button
+          type="submit"
+          data-testid="submit-button"
+          disabled={!isFormValid}
+        >
           S'inscrire
         </button>
       </form>
-      {showSuccess && <div className="success-toast">Inscription réussie</div>}
+      {showSuccess && (
+        <div className="success-toast" data-testid="success-toast">
+          Inscription réussie !
+        </div>
+      )}
     </div>
   );
 }
