@@ -24,7 +24,10 @@ jobs:
           npm run build --if-present
           npm test
         working-directory: ./my-app
-
+      - name: Upload coverage reports to codecov
+        uses: codecov/codecov-actions@v3
+        env:
+            CODECOV_TOKEN: ${{secrets.CODEDOV_TOKEN}}
       - name: Setup pages
         id: pages
         uses: actions/configure-pages@v3
