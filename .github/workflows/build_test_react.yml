@@ -24,6 +24,8 @@ jobs:
           npm run build --if-present
           npm test
         working-directory: ./my-app
+      - name: Generate JSDoc
+        run: npx jsdoc -r ./my-app/src -d ./my-app/docs
       - name: Upload coverage reports to codecov
         uses: codecov/codecov-action@v3
         env:
