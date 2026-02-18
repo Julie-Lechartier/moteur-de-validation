@@ -27,3 +27,20 @@ npm start
 ```
 L'application sera accessible sur http://localhost:3000
 
+
+## Tests
+
+Pour exécuter les tests unitaires et d'intégration :
+
+```
+npm test
+```
+
+## Génération de documentation
+
+Pour générer la documentation technique avec JSDoc :
+
+```
+npm run jsdoc
+```
+
