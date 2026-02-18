@@ -2,7 +2,7 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
-  "hompage": "https://julie-lechartier.github.io/moteur-de-validation/"
+  "hompage": "https://julie-lechartier.github.io/moteur-de-validation/",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
