@@ -32,4 +32,16 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./my-app/build
-        
+  deploy:
+    needs: build_test
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: macos-15
+    environment: 
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
+    steps:
+      - name: Deploy tu GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
