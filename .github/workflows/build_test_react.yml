@@ -33,7 +33,7 @@ jobs:
         with:
           directory: ./my-app
       - name: Generate JSDoc
-        run: npx jsdoc -c ./my-app/jsdoc.json -r -d ./my-app/docs ./my-app/src
+        run: npx jsdoc -r ./my-app/src -d ./my-app/docs
       - name: Setup pages
         id: pages
         uses: actions/configure-pages@v3
