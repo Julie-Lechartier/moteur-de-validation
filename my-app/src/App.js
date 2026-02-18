@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import './App.css';
 
+/**
+ * Composant principal du formulaire d'inscription de my-app
+ * Gère les champs : prénom, nom, email, date de naissance, code postal, ville
+ * Valide les données en temps réel et au blur
+ * Stocke les données valides dans localStorage
+ */
 function App() {
   const [formData, setFormData] = useState({
     lastName: '',
@@ -10,24 +16,38 @@ function App() {
     postalCode: '',
     city: '',
   });
+
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
 
+  /**
+   * Valide un champ individuellement
+   * - lastName / firstName / city : lettres, espaces, tirets, min 2 caractères
+   * - email : doit contenir un '@'
+   * - birthDate : âge minimum 18 ans, année ≥1900
+   * - postalCode : exactement 5 chiffres
+   * @param {string} name Nom du champ à valider
+   * @param {string} value Valeur saisie par l'utilisateur
+   * @returns {string} Message d'erreur ou chaîne vide si valide
+   */
   const validateField = (name, value) => {
     switch (name) {
       case 'lastName':
       case 'firstName':
-      case 'city':
-        // Antislash devant - retiré pour ESLint
+      case 'city': {
         const nameRegex = /^[A-Za-zÀ-ÿ\s-]+$/;
         if (!nameRegex.test(value)) return 'Seulement lettres, espaces, tirets';
         return value.length < 2 ? 'Minimum 2 caractères' : '';
+      }
       case 'email':
         return !value.includes('@') ? 'Email invalide' : '';
-      case 'birthDate':
+      case 'birthDate': {
         if (!value) return 'Date de naissance requise';
-        const age = new Date().getFullYear() - new Date(value).getFullYear();
+        const birthYear = new Date(value).getFullYear();
+        if (birthYear < 1900) return 'Année invalide';
+        const age = new Date().getFullYear() - birthYear;
         return age < 18 ? 'Âge minimum de 18 ans' : '';
+      }
       case 'postalCode':
         return !/^\d{5}$/.test(value) ? '5 chiffres requis' : '';
       default:
@@ -35,17 +55,22 @@ function App() {
     }
   };
 
+  /**
+   * Bloque les caractères non autorisés dans les champs nom / prénom / ville
+   * @param {React.KeyboardEvent} e
+   */
   const handleKeyDown = (e) => {
     const { name } = e.target;
-    if (name === 'lastName' || name === 'firstName' || name === 'city') {
-      // Antislash retiré devant - pour ESLint
+    if (['lastName', 'firstName', 'city'].includes(name)) {
       const allowed = /[A-Za-zÀ-ÿ\s-]|Backspace|Delete|Tab|ArrowLeft|ArrowRight|Home|End/;
-      if (!allowed.test(e.key) && e.key.length === 1) {
-        e.preventDefault();
-      }
+      if (!allowed.test(e.key) && e.key.length === 1) e.preventDefault();
     }
   };
 
+  /**
+   * Gère la saisie utilisateur et met à jour le state + validation temps réel
+   * @param {React.ChangeEvent<HTMLInputElement>} e
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -53,21 +78,31 @@ function App() {
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
+  /**
+   * Valide au focus out (quand utilisateur quitte le champ)
+   * @param {React.FocusEvent<HTMLInputElement>} e
+   */
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
+  /**
+   * Soumet le formulaire si valide → localStorage + message succès + reset
+   * @param {React.FormEvent<HTMLFormElement>} e
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     const isValid =
       Object.values(formData).every((v) => v !== '') &&
-      Object.values(errors).every((e) => !e);
+      Object.values(errors).every((err) => !err);
+
     if (isValid) {
       localStorage.setItem('inscription', JSON.stringify(formData));
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
+
       setFormData({
         lastName: '',
         firstName: '',
@@ -82,12 +117,13 @@ function App() {
 
   const isFormValid =
     Object.values(formData).every((v) => v !== '') &&
-    Object.values(errors).every((e) => !e);
+    Object.values(errors).every((err) => !err);
 
   return (
     <div className="App">
       <h1>Formulaire d'inscription</h1>
       <form onSubmit={handleSubmit}>
+        {/* Prénom */}
         <div className="field-group">
           <label>Prénom *</label>
           <input
@@ -97,7 +133,7 @@ function App() {
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            placeholder="Test"
+            placeholder="Julie"
           />
           {errors.firstName && (
             <span className="error" data-testid="firstName-error">
@@ -106,6 +142,7 @@ function App() {
           )}
         </div>
 
+        {/* Nom */}
         <div className="field-group">
           <label>Nom *</label>
           <input
@@ -115,7 +152,7 @@ function App() {
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            placeholder="Doe"
+            placeholder="Lechartier"
           />
           {errors.lastName && (
             <span className="error" data-testid="lastName-error">
@@ -124,6 +161,7 @@ function App() {
           )}
         </div>
 
+        {/* Email */}
         <div className="field-group">
           <label>Email *</label>
           <input
@@ -142,6 +180,7 @@ function App() {
           )}
         </div>
 
+        {/* Date de naissance */}
         <div className="field-group">
           <label>Date de naissance *</label>
           <input
@@ -152,7 +191,9 @@ function App() {
             onChange={handleChange}
             onBlur={handleBlur}
             max={
-              new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+              new Date(
+                new Date().setFullYear(new Date().getFullYear() - 18)
+              )
                 .toISOString()
                 .split('T')[0]
             }
@@ -164,6 +205,7 @@ function App() {
           )}
         </div>
 
+        {/* Code postal */}
         <div className="field-group">
           <label>Code postal *</label>
           <input
@@ -182,6 +224,7 @@ function App() {
           )}
         </div>
 
+        {/* Ville */}
         <div className="field-group">
           <label>Ville</label>
           <input
@@ -208,6 +251,7 @@ function App() {
           S'inscrire
         </button>
       </form>
+
       {showSuccess && (
         <div className="success-toast" data-testid="success-toast">
           Inscription réussie !
