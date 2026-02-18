@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: App.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: App.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [formData, setFormData] = useState({
+    lastName: '',
+    firstName: '',
+    email: '',
+    birthDate: '',
+    postalCode: '',
+    city: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  /**
+   * Valide un champ individuellement
+   * @param {string} name
+   * @param {string} value
+   * @returns {string}
+   */
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'lastName':
+      case 'firstName':
+      case 'city':
+        const nameRegex = /^[A-Za-zÀ-ÿ\s\-]+$/;
+        if (!nameRegex.test(value)) return 'Seulement lettres, espaces, tirets';
+        return value.length &lt; 2 ? 'Minimum 2 caractères' : '';
+      case 'email':
+        return !value.includes('@') ? 'Email invalide' : '';
+      case 'birthDate':
+        if (!value) return 'Date de naissance requise';
+        const age = new Date().getFullYear() - new Date(value).getFullYear();
+        return age &lt; 18 ? 'Âge minimum 18 ans' : '';
+      case 'postalCode':
+        return !/^\d{5}$/.test(value) ? '5 chiffres requis' : '';
+      default:
+        return '';
+    }
+  };
+
+  /**
+   * Bloque les caractères non autorisés dans les noms/villes
+   * @param {Object} e
+   */
+  const handleKeyDown = (e) => {
+    const { name } = e.target;
+    if (name === 'lastName' || name === 'firstName' || name === 'city') {
+      const allowed =
+        /[A-Za-zÀ-ÿ\s\-]|Backspace|Delete|Tab|ArrowLeft|ArrowRight|Home|End/;
+      if (!allowed.test(e.key) &amp;&amp; e.key.length === 1) {
+        e.preventDefault();
+      }
+    }
+  };
+  /**
+   * Gère la saisie utilisateur et met à jour le state + validation temps réel
+   * @param {Object} e
+   */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+  /**
+   * Valide au focus out (quand utilisateur quitte le champ)
+   * @param {Object} e
+   */
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+  /**
+   * Soumet le formulaire si valide → localStorage + toaster + reset
+   * @param {Object} e
+   */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const isValid =
+      Object.values(formData).every((v) => v !== '') &amp;&amp;
+      Object.values(errors).every((e) => !e);
+    if (isValid) {
+      localStorage.setItem('inscription', JSON.stringify(formData));
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      setFormData({
+        lastName: '',
+        firstName: '',
+        email: '',
+        birthDate: '',
+        postalCode: '',
+        city: '',
+      });
+      setErrors({});
+    }
+  };
+
+  const isFormValid =
+    Object.values(formData).every((v) => v !== '') &amp;&amp;
+    Object.values(errors).every((e) => !e);
+
+  return (
+    &lt;div className="App">
+      &lt;h1>Formulaire d'inscription&lt;/h1>
+      &lt;form onSubmit={handleSubmit}>
+        &lt;div className="field-group">
+          &lt;label>Prénom *&lt;/label>
+          &lt;input
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder="Test"
+            data-testid="firstName-input"
+          />
+          {errors.firstName &amp;&amp; (
+            &lt;span className="error">{errors.firstName}&lt;/span>
+          )}
+        &lt;/div>
+        &lt;div className="field-group">
+          &lt;label>Nom *&lt;/label>
+          &lt;input
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            data-testid="lastName-input"
+            placeholder="Doe"
+          />
+          {errors.lastName &amp;&amp; &lt;span className="error">{errors.lastName}&lt;/span>}
+        &lt;/div>
+        &lt;div className="field-group">
+          &lt;label>Email *&lt;/label>
+          &lt;input
+            name="email"
+            data-testid="email-input" //
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder="test@test.com"
+          />
+          {errors.email &amp;&amp; &lt;span className="error">{errors.email}&lt;/span>}
+        &lt;/div>
+        &lt;div className="field-group">
+          &lt;label>Date de naissance *&lt;/label>
+          &lt;input
+            name="birthDate"
+            data-testid="birth-input"
+            type="date"
+            value={formData.birthDate}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            max={
+              new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+                .toISOString()
+                .split('T')[0]
+            }
+          />
+          {errors.birthDate &amp;&amp; (
+            &lt;span className="error">{errors.birthDate}&lt;/span>
+          )}
+        &lt;/div>
+        &lt;div className="field-group">
+          &lt;label>Code postal *&lt;/label>
+          &lt;input
+            name="postalCode"
+            data-testid="postalCode-input"
+            value={formData.postalCode}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder="01000"
+            maxLength="5"
+          />
+          {errors.postalCode &amp;&amp; (
+            &lt;span className="error">{errors.postalCode}&lt;/span>
+          )}
+        &lt;/div>
+        &lt;div className="field-group">
+          &lt;label>Ville&lt;/label>
+          &lt;input
+            name="city"
+            data-testid="ville-input"
+            value={formData.city}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder="Lyon"
+          />
+          {errors.city &amp;&amp; &lt;span className="error">{errors.city}&lt;/span>}
+        &lt;/div>
+        &lt;button type="submit" disabled={!isFormValid}>
+          S'inscrire
+        &lt;/button>
+      &lt;/form>
+      {showSuccess &amp;&amp; &lt;div className="success-toast">Inscription réussie&lt;/div>}
+    &lt;/div>
+  );
+}
+export default App;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Feb 13 2026 12:14:36 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
