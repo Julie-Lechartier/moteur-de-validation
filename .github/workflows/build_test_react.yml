@@ -35,6 +35,11 @@ jobs:
       - name: Setup pages
         id: pages
         uses: actions/configure-pages@v3
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          build: npm run build
+          start: npm start
       - name: Prepare artifact
         run: |
           mkdir -p ./artifact
