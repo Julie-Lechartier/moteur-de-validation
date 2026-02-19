@@ -1,50 +1,33 @@
-describe('User registration E2E', () => {
-
-  const validUser = { id: 1, name: "Julie", email: "julie@test.com" };
-  const invalidUser = { id: 2, name: "", email: "invalid@test.com" }; // exemple erreur : nom vide
-
+describe("User registration E2E", () => {
   beforeEach(() => {
-    cy.visit('/', {
-      onBeforeLoad(win) {
-        win.localStorage.clear();
-      }
+    cy.visit("/moteur-de-validation");
+    cy.clearLocalStorage();
+  });
+
+  it("Ajout d’un nouvel utilisateur sans erreur", () => {
+    cy.get('[data-testid="firstName-input"]').type("Julie");
+    cy.get('[data-testid="lastName-input"]').type("Lechartier");
+    cy.get('[data-testid="email-input"]').type("julie@example.com");
+    cy.get('[data-testid="birth-input"]').type("1990-01-01");
+    cy.get('[data-testid="postalCode-input"]').type("01000");
+    cy.get('[data-testid="ville-input"]').type("Lyon");
+
+    cy.get('[data-testid="submit-button"]').click();
+
+    cy.get('[data-testid="success-toast"]').should("exist");
+
+    cy.window().then((win) => {
+      const stored = JSON.parse(win.localStorage.getItem("inscription") || "{}");
+      expect(stored.firstName).to.equal("Julie");
+      expect(stored.lastName).to.equal("Lechartier");
+      expect(stored.email).to.equal("julie@example.com");
     });
   });
 
-  it('Ajout d’un nouvel utilisateur sans erreur', () => {
-    cy.contains('0 user(s) already registered').should('be.visible');
+  it("Ajout d’un utilisateur avec erreur", () => {
+    cy.get('[data-testid="firstName-input"]').type("Julie");
+    cy.get('[data-testid="lastName-input"]').type("Lechartier");
 
-    cy.get('a[href="/register"]').click();
-
-    cy.get('input[name="name"]').type(validUser.name);
-    cy.get('input[name="email"]').type(validUser.email);
-    cy.get('button[type="submit"]').click();
-
-    cy.url().should('eq', Cypress.config().baseUrl + '/');
-
-    cy.contains('1 user(s) already registered').should('be.visible');
+    cy.get('[data-testid="submit-button"]').should("be.disabled");
   });
-
-  it('Ajout d’un nouvel utilisateur avec erreur', () => {
-    cy.window().then(win => {
-      win.localStorage.setItem('users', JSON.stringify([validUser]));
-    });
-    cy.reload();
-
-    cy.contains('1 user(s) already registered').should('be.visible');
-
-    cy.get('a[href="/register"]').click();
-
-    cy.get('input[name="name"]').type(invalidUser.name);
-    cy.get('input[name="email"]').type(invalidUser.email);
-    cy.get('button[type="submit"]').click();
-
-    // Ici on vérifie qu'une erreur s'affiche
-    cy.contains('Please enter a valid name').should('be.visible');
-
-    cy.visit('/');
-
-    cy.contains('1 user(s) already registered').should('be.visible');
-  });
-
 });
