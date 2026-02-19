@@ -82,3 +82,58 @@ button:disabled {
   from { transform: translateY(-20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+/* ========================= */
+/* HOME PAGE STYLING */
+/* ========================= */
+
+.home-container {
+  max-width: 500px;
+  margin: 2em auto;
+  padding: 2em;
+  font-family: system-ui, sans-serif;
+}
+
+.user-count {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 1.5em;
+  color: #1f2937;
+}
+
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2em 0;
+}
+
+.user-item {
+  background: #f3f4f6;
+  padding: 0.9em;
+  border-radius: 6px;
+  margin-bottom: 0.75em;
+  font-weight: 500;
+  color: #374151;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.user-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.home-link {
+  display: block;
+  text-align: center;
+  padding: 0.9em;
+  background: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.home-link:hover {
+  background: #2563eb;
+}

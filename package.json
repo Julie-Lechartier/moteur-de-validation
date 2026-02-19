@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "react-router-dom": "^7.13.0"
+  },
+  "devDependencies": {
+    "cypress-localstorage-commands": "^2.2.8"
+  }
+}
