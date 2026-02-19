@@ -16,8 +16,12 @@ export const UserProvider = ({ children }) => {
     });
   };
 
+  const isEmailTaken = (email) => {
+    return users.some(u => u.email === email);
+  };
+
   return (
-    <UserContext.Provider value={{ users, addUser }}>
+    <UserContext.Provider value={{ users, addUser, isEmailTaken }}>
       {children}
     </UserContext.Provider>
   );

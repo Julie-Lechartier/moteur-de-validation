@@ -2,10 +2,16 @@ import { useState, useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Composant Register
+ * Formulaire d'inscription avec validation champ par champ,
+ * gestion des utilisateurs existants et redirection vers la Home.
+ */
 export default function Register() {
   const { users, addUser } = useContext(UserContext);
   const navigate = useNavigate();
 
+  // State formulaire
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -14,17 +20,24 @@ export default function Register() {
     postalCode: '',
     city: '',
   });
+
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
 
   /**
+   * Vérifie si un email est déjà utilisé
+   * @param {string} email
+   * @returns {boolean}
+   */
+  const isEmailTaken = (email) => users.some(u => u.email === email);
+
+  /**
    * Valide un champ individuellement
-   * @param {string} name
-   * @param {string} value
-   * @returns {string}
+   * @param {string} name - Nom du champ
+   * @param {string} value - Valeur du champ
+   * @returns {string} - Message d'erreur ou chaîne vide
    */
   const validateField = (name, value) => {
-    /* istanbul ignore next */
     switch (name) {
       case 'lastName':
       case 'firstName':
@@ -46,8 +59,8 @@ export default function Register() {
   };
 
   /**
-   * Bloque les caractères non autorisés dans les noms/villes
-   * @param {Object} e
+   * Bloque les caractères non autorisés dans noms et ville
+   * @param {KeyboardEvent} e
    */
   const handleKeyDown = (e) => {
     const { name } = e.target;
@@ -59,53 +72,72 @@ export default function Register() {
       }
     }
   };
+
   /**
    * Gère la saisie utilisateur et met à jour le state + validation temps réel
-   * @param {Object} e
+   * @param {React.ChangeEvent<HTMLInputElement>} e
    */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     const error = validateField(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
+
   /**
    * Valide au focus out (quand utilisateur quitte le champ)
-   * @param {Object} e
+   * @param {React.FocusEvent<HTMLInputElement>} e
    */
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
+
   /**
-   * Soumet le formulaire si valide → localStorage + toaster + reset
-   * @param {Object} e
+   * Soumet le formulaire si valide → ajout dans UserContext + redirection + toast
+   * @param {React.FormEvent<HTMLFormElement>} e
    */
   const handleSubmit = (e) => {
     e.preventDefault();
-    const isValid =
-      Object.values(formData).every((v) => v !== '') &&
-      Object.values(errors).every((e) => !e);
-    if (isValid) {
-      localStorage.setItem('inscription', JSON.stringify(formData));
-      setShowSuccess(true);
-      /* istanbul ignore next */
-      setTimeout(() => setShowSuccess(false), 3000);
-      setFormData({
-        lastName: '',
-        firstName: '',
-        email: '',
-        birthDate: '',
-        postalCode: '',
-        city: '',
-      });
-      setErrors({});
+
+    // Vérifie si email déjà pris
+    if (isEmailTaken(formData.email)) {
+      setErrors(prev => ({ ...prev, email: 'Email déjà pris' }));
+      return;
     }
+
+    // Validation complète
+    const isValid =
+      Object.values(formData).every(v => v !== '') &&
+      Object.values(errors).every(e => !e);
+
+    if (!isValid) return;
+
+    addUser(formData);
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      navigate('/');
+    }, 1500);
+
+    // Reset formulaire
+    setFormData({
+      lastName: '',
+      firstName: '',
+      email: '',
+      birthDate: '',
+      postalCode: '',
+      city: '',
+    });
+    setErrors({});
   };
+
+  // Bouton submit activé uniquement si tous les champs remplis et valides
   const isFormValid =
-    Object.values(formData).every((v) => v !== '') &&
-    Object.values(errors).every((e) => !e);
+    Object.values(formData).every(v => v !== '') &&
+    Object.values(errors).every(e => !e);
 
   return (
     <div className="App">
@@ -120,6 +152,7 @@ export default function Register() {
             value={formData.firstName}
             onChange={handleChange}
             onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
             placeholder="Julie"
           />
           {errors.firstName && (
@@ -138,6 +171,7 @@ export default function Register() {
             value={formData.lastName}
             onChange={handleChange}
             onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
             placeholder="Lechartier"
           />
           {errors.lastName && (
@@ -176,13 +210,9 @@ export default function Register() {
             value={formData.birthDate}
             onChange={handleChange}
             onBlur={handleBlur}
-            max={
-              new Date(
-                new Date().setFullYear(new Date().getFullYear() - 18)
-              )
-                .toISOString()
-                .split('T')[0]
-            }
+            max={new Date(
+              new Date().setFullYear(new Date().getFullYear() - 18)
+            ).toISOString().split('T')[0]}
           />
           {errors.birthDate && (
             <span className="error" data-testid="birth-error">
@@ -219,6 +249,7 @@ export default function Register() {
             value={formData.city}
             onChange={handleChange}
             onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
             placeholder="Lyon"
           />
           {errors.city && (

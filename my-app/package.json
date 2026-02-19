@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@testing-library/user-event": "^14.6.1",
-    "cypress": "^15.10.0"
+    "cypress": "^15.10.0",
+    "cypress-localstorage-commands": "^2.2.8"
   }
 }
