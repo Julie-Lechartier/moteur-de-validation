@@ -42,7 +42,7 @@ export default function Register() {
       case 'lastName':
       case 'firstName':
       case 'city':
-        const nameRegex = /^[A-Za-zÀ-ÿ\s\-]+$/;
+        const nameRegex = /^[A-Za-zÀ-ÿ\s-]+$/;
         if (!nameRegex.test(value)) return 'Seulement lettres, espaces, tirets';
         return value.length < 2 ? 'Minimum 2 caractères' : '';
       case 'email':
