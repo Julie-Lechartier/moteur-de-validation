@@ -1,19 +1,37 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 export const UserContext = createContext();
 
-export const UserProvider = ({ children }) => {
-  const [users, setUsers] = useState(() => {
-    const stored = localStorage.getItem('inscriptionList');
-    return stored ? JSON.parse(stored) : [];
-  });
+const API_URL = "https://jsonplaceholder.typicode.com/users";
 
-  const addUser = (user) => {
-    setUsers((prev) => {
-      const updated = [...prev, user];
-      localStorage.setItem('inscriptionList', JSON.stringify(updated));
-      return updated;
-    });
+export const UserProvider = ({ children }) => {
+
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(API_URL);
+        setUsers(response.data);
+      } catch (err) {
+        setError("Erreur lors du chargement des utilisateurs");
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const addUser = async (user) => {
+    try {
+      const response = await axios.post(API_URL, user);
+      setUsers((prev) => [...prev, response.data]);
+      setError(null);
+    } catch (err) {
+      setError("Erreur lors de l'ajout de l'utilisateur");
+      throw err;
+    }
   };
 
   const isEmailTaken = (email) => {
@@ -21,7 +39,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ users, addUser, isEmailTaken }}>
+    <UserContext.Provider value={{ users, addUser, isEmailTaken, error }}>
       {children}
     </UserContext.Provider>
   );

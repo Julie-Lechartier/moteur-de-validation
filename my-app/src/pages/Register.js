@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
  * gestion des utilisateurs existants et redirection vers la Home.
  */
 export default function Register() {
-  const { users, addUser } = useContext(UserContext);
+  const { users, addUser, error } = useContext(UserContext);
   const navigate = useNavigate();
 
   // State formulaire
@@ -98,43 +98,45 @@ export default function Register() {
    * Soumet le formulaire si valide → ajout dans UserContext + redirection + toast
    * @param {React.FormEvent<HTMLFormElement>} e
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Vérifie si email déjà pris
     if (isEmailTaken(formData.email)) {
       setErrors(prev => ({ ...prev, email: 'Email déjà pris' }));
       return;
     }
 
-    // Validation complète
     const isValid =
       Object.values(formData).every(v => v !== '') &&
       Object.values(errors).every(e => !e);
 
     if (!isValid) return;
 
-    addUser(formData);
-    setShowSuccess(true);
+    try {
+      await addUser(formData);
 
-    setTimeout(() => {
-      setShowSuccess(false);
-      navigate('/');
-    }, 1500);
+      setShowSuccess(true);
 
-    // Reset formulaire
-    setFormData({
-      lastName: '',
-      firstName: '',
-      email: '',
-      birthDate: '',
-      postalCode: '',
-      city: '',
-    });
-    setErrors({});
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate('/');
+      }, 1500);
+
+      setFormData({
+        lastName: '',
+        firstName: '',
+        email: '',
+        birthDate: '',
+        postalCode: '',
+        city: '',
+      });
+
+      setErrors({});
+
+    } catch (error) {
+    }
   };
 
-  // Bouton submit activé uniquement si tous les champs remplis et valides
   const isFormValid =
     Object.values(formData).every(v => v !== '') &&
     Object.values(errors).every(e => !e);
@@ -142,6 +144,11 @@ export default function Register() {
   return (
     <div className="App">
       <h1>Formulaire d'inscription</h1>
+      {error && (
+        <div className="error-global" data-testid="createUserError">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         {/* Prénom */}
         <div className="field-group">
