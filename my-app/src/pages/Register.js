@@ -66,7 +66,7 @@ export default function Register() {
     const { name } = e.target;
     if (name === 'lastName' || name === 'firstName' || name === 'city') {
       const allowed =
-        /[A-Za-zÀ-ÿ\s\-]|Backspace|Delete|Tab|ArrowLeft|ArrowRight|Home|End/;
+        /[A-Za-zÀ-ÿ\s-]|Backspace|Delete|Tab|ArrowLeft|ArrowRight|Home|End/;
       if (!allowed.test(e.key) && e.key.length === 1) {
         e.preventDefault();
       }
