@@ -1,67 +1,130 @@
 name: Build and Test React Application
-#Controls when the action will run
+
 on:
   push:
     branches: [main]
-  pull_request: 
+  pull_request:
     branches: [main]
 
 jobs:
-  build_test: 
+
+  build-and-test:
     runs-on: macos-15
-    strategy: 
+
+    strategy:
       matrix:
-        node-version: [ 20.x ]
+        node-version: [20.x]
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - name: Use Node.js ${{matrix.node-version}}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{matrix.node-version}}
-      - name: npm ci, build and test
+
+      - name: Install, build and test
         run: |
           npm ci
           npm run build --if-present
           npm test
         working-directory: ./my-app
+
       - name: Generate JSDoc
         run: npx jsdoc -R ./README.md -r ./my-app/src -d ./my-app/docs
+
       - name: Upload coverage reports to codecov
         uses: codecov/codecov-action@v3
         env:
-            CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
         with:
           directory: ./my-app
-      - name: Setup pages
-        id: pages
-        uses: actions/configure-pages@v3
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           build: npm run build
           start: npm start
           working-directory: ./my-app
+
       - name: Prepare artifact
         run: |
           mkdir -p ./artifact
-          cp -r ./my-app/build/* ./artifact/   # l'application à la racine
-          cp -r ./my-app/docs ./artifact/docs  # la doc dans /docs
+          cp -r ./my-app/build/* ./artifact/
+          cp -r ./my-app/docs ./artifact/docs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./artifact
 
+
+  publish-npm:
+    needs: build-and-test
+    runs-on: macos-15
+
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./my-app
+
+      - name: Check version difference
+        id: version_check
+        run: |
+          PACKAGE_NAME=$(node -p "require('./my-app/package.json').name")
+          LOCAL_VERSION=$(node -p "require('./my-app/package.json').version")
+
+          echo "Local version: $LOCAL_VERSION"
+
+          NPM_VERSION=$(npm view $PACKAGE_NAME version || echo "0.0.0")
+
+          echo "NPM version: $NPM_VERSION"
+
+          if [ "$(printf '%s\n' "$LOCAL_VERSION" "$NPM_VERSION" | sort -V | tail -n1)" = "$LOCAL_VERSION" ] && [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build package
+        if: steps.version_check.outputs.publish == 'true'
+        run: npm run build-npm-ci
+        working-directory: ./my-app
+
+      - name: Publish to NPM
+        if: steps.version_check.outputs.publish == 'true'
+        run: npm publish --access public
+        working-directory: ./my-app
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip publish
+        if: steps.version_check.outputs.publish == 'false'
+        run: echo "Version already published. Skipping."
+
+
   deploy:
-    needs: build_test
+    needs: publish-npm
     permissions:
       pages: write
       id-token: write
+
     runs-on: macos-15
-    environment: 
+
+    environment:
       name: github-pages
       url: ${{steps.deployment.outputs.page_url}}
+
     steps:
-      - name: Deploy tu GitHub Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
