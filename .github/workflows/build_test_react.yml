@@ -137,6 +137,55 @@ jobs:
         if: steps.version_check.outputs.skip == 'true'
         run: echo "Version already published. Skipping publication."
 
+  validate-api:
+    needs: publish-npm
+    runs-on: ubuntu-latest   # macOS est inutile ici pour Docker
+    env:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: root
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+  
+      - name: Start MySQL container
+        run: |
+          docker run -d --name mysql_test -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_DATABASE=$MYSQL_DATABASE -p 3307:3306 mysql:9.2
+          sleep 15  # attente démarrage DB
+  
+      - name: Build API image
+        run: docker build -t fastapi-app:latest ./api
+  
+      - name: Run API container
+        run: |
+          docker run -d \
+            --name fastapi_test \
+            -e MYSQL_HOST=host.docker.internal \
+            -e MYSQL_USER=$MYSQL_USER \
+            -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
+            -e MYSQL_DATABASE=$MYSQL_DATABASE \
+            -p 8000:8000 \
+            fastapi-app:latest
+          sleep 5
+  
+      - name: Test API endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/users)
+          if [ "$response" != "200" ]; then
+            echo "API test failed with code $response"
+            exit 1
+          fi
+  
+      - name: Push API to Docker Hub
+        if: success()
+        run: |
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker tag fastapi-app:latest $DOCKER_USERNAME/fastapi-app:latest
+          docker push $DOCKER_USERNAME/fastapi-app:latest
+          
   deploy:
 
     needs: publish-npm
