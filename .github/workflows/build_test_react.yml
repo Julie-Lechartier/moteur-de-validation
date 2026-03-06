@@ -155,13 +155,13 @@ jobs:
       - name: Start MySQL container
         run: |
           docker run -d \
-            --name mysql_test \
-            -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
-            -e MYSQL_DATABASE=$MYSQL_DATABASE \
-            -e MYSQL_USER=$MYSQL_USER \
-            -p 3307:3306 \
-            mysql:9.2
-          sleep 15  # attendre que MySQL démarre
+          --name mysql_test \
+          -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
+          -e MYSQL_DATABASE=$MYSQL_DATABASE \
+          -e MYSQL_USER=$MYSQL_USER \
+          -p 3307:3306 \
+          mysql:8.0
+
   
       - name: Build API image
         run: docker build -t $DOCKER_USERNAME/julie-my-app:latest ./my-app/api
@@ -177,7 +177,6 @@ jobs:
             -e MYSQL_DATABASE=$MYSQL_DATABASE \
             -p 8000:8000 \
             $DOCKER_USERNAME/julie-my-app:latest
-          sleep 10  # laisser le temps à l'API de démarrer
   
       - name: Test API endpoint
         run: |
