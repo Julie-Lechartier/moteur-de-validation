@@ -158,14 +158,12 @@ jobs:
             --name mysql_test \
             -e MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
             -e MYSQL_DATABASE="$MYSQL_DATABASE" \
-            -e MYSQL_USER="$MYSQL_USER" \
             -p 3307:3306 \
             mysql:8.0
           
           sleep 20
           
           docker exec mysql_test mysqladmin ping -uroot -p"$MYSQL_ROOT_PASSWORD" || (echo "MySQL pas prêt" && docker logs mysql_test && exit 1)
-  
       - name: Build API
         run: docker build -t julie-my-app:latest ./my-app/api
   
