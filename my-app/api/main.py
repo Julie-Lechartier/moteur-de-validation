@@ -1,11 +1,11 @@
-import os
 import mysql.connector
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
 origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -14,7 +14,6 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Connexion MySQL
 conn = mysql.connector.connect(
     database=os.getenv("MYSQL_DATABASE"),
     user=os.getenv("MYSQL_USER"),
@@ -26,8 +25,8 @@ conn = mysql.connector.connect(
 @app.get("/users")
 async def get_users():
     cursor = conn.cursor()
-    sql_select_query = "SELECT * FROM utilisateur"
+    sql_select_query = "SELECT * FROM users"
     cursor.execute(sql_select_query)
     records = cursor.fetchall()
     print("Total number of rows in table: ", cursor.rowcount)
-    return {"utilisateurs": records}
+    return {"users": records}
