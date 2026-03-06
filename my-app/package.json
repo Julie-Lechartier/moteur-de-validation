@@ -1,6 +1,6 @@
 {
   "name": "julie-ci-cd-ynov-moteur-validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://julie-lechartier.github.io/moteur-de-validation/",
   "main": "dist/index.js",
   "files": [
