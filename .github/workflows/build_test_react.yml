@@ -140,7 +140,7 @@ jobs:
   validate-api:
     needs: publish-npm
     runs-on: ubuntu-latest
-  
+    
     env:
       MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
       MYSQL_DATABASE: testdb
@@ -149,48 +149,55 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
   
-      - name: Start MySQL container
+      - name: Démarrer MySQL
         run: |
           docker run -d \
-          --name mysql_test \
-          -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
-          -e MYSQL_DATABASE=$MYSQL_DATABASE \
-          -e MYSQL_USER=$MYSQL_USER \
-          -p 3307:3306 \
-          mysql:8.0
-
+            --name mysql_test \
+            -e MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
+            -e MYSQL_DATABASE="$MYSQL_DATABASE" \
+            -e MYSQL_USER="$MYSQL_USER" \
+            -p 3307:3306 \
+            mysql:8.0
+          
+          sleep 20
+          
+          docker exec mysql_test mysqladmin ping -uroot -p"$MYSQL_ROOT_PASSWORD" || (echo "MySQL pas prêt" && docker logs mysql_test && exit 1)
   
-      - name: Build API image
-        run: docker build -t $DOCKER_USERNAME/julie-my-app:latest ./my-app/api
+      - name: Build API
+        run: docker build -t julie-my-app:latest ./my-app/api
   
-      - name: Run API container
+      - name: Lancer API + test
         run: |
           docker run -d \
             --name fastapi_test \
             --link mysql_test:mysql \
             -e MYSQL_HOST=mysql \
-            -e MYSQL_USER=$MYSQL_USER \
-            -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
-            -e MYSQL_DATABASE=$MYSQL_DATABASE \
+            -e MYSQL_USER="$MYSQL_USER" \
+            -e MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
+            -e MYSQL_DATABASE="$MYSQL_DATABASE" \
             -p 8000:8000 \
-            $DOCKER_USERNAME/julie-my-app:latest
+            julie-my-app:latest
+          
+          sleep 15
+          curl -f http://localhost:8000/users || (echo "API KO" && docker logs fastapi_test && exit 1)
+          
   
-      - name: Test API endpoint
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/users)
-          if [ "$response" != "200" ]; then
-            echo "API test failed with code $response"
-            exit 1
-          fi
-  
-      - name: Push API to Docker Hub
+      - name: Push Docker si tout va bien
         if: success()
         run: |
-          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker push $DOCKER_USERNAME/julie-my-app:latest
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker tag julie-my-app:latest "$DOCKER_USERNAME/julie-my-app:latest"
+          docker push "$DOCKER_USERNAME/julie-my-app:latest"
+  
+      - name: Nettoyage
+        if: always()
+        run: |
+          docker stop mysql_test fastapi_test || true
+          docker rm mysql_test fastapi_test || true
+
   
   deploy:
 
