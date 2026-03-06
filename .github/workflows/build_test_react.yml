@@ -164,7 +164,7 @@ jobs:
           sleep 15  # attendre que MySQL démarre
   
       - name: Build API image
-        run: docker build -t fastapi-app:latest ./my-app/api
+        run: docker build -t $DOCKER_USERNAME/julie-my-app:latest ./my-app/api
   
       - name: Run API container
         run: |
@@ -176,7 +176,7 @@ jobs:
             -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
             -e MYSQL_DATABASE=$MYSQL_DATABASE \
             -p 8000:8000 \
-            fastapi-app:latest
+            $DOCKER_USERNAME/julie-my-app:latest
           sleep 10  # laisser le temps à l'API de démarrer
   
       - name: Test API endpoint
@@ -191,8 +191,7 @@ jobs:
         if: success()
         run: |
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker tag fastapi-app:latest $DOCKER_USERNAME/fastapi-app:latest
-          docker push $DOCKER_USERNAME/fastapi-app:latest
+          docker push $DOCKER_USERNAME/julie-my-app:latest
   
   deploy:
 
