@@ -14,19 +14,18 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-conn = mysql.connector.connect(
-    database=os.getenv("MYSQL_DATABASE"),
-    user=os.getenv("MYSQL_USER"),
-    password=os.getenv("MYSQL_ROOT_PASSWORD"),
-    port=3306,
-    host=os.getenv("MYSQL_HOST")
-)
-
 @app.get("/users")
 async def get_users():
-    cursor = conn.cursor()
-    sql_select_query = "SELECT * FROM users"
-    cursor.execute(sql_select_query)
+    conn = mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST", "db"),
+        database=os.getenv("MYSQL_DATABASE", "ynov_ci"),
+        user=os.getenv("MYSQL_USER", "root"),
+        password=os.getenv("MYSQL_PASSWORD", "ynovpwd"),
+        port=3306
+    )
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
     records = cursor.fetchall()
-    print("Total number of rows in table: ", cursor.rowcount)
-    return {"users": records}
+    cursor.close()
+    conn.close()
+    return {"users": [dict(row) for row in records]}

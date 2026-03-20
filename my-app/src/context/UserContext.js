@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const UserContext = createContext();
 
-const API_URL = "https://jsonplaceholder.typicode.com/users";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const UserProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
@@ -13,7 +13,7 @@ export const UserProvider = ({ children }) => {
     const fetchUsers = async () => {
       try {
         const res = await axios.get(API_URL);
-        setUsers(res.data);
+        setUsers(res.data.users);
       } catch {
         setError("Erreur lors du chargement des utilisateurs");
       }
