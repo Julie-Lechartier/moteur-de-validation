@@ -21,11 +21,14 @@ export const UserProvider = ({ children }) => {
     fetchUsers();
   }, []);
 
+  const [success, setSuccess] = useState(false);
   const addUser = async (user) => {
     try {
       const res = await axios.post(API_URL, user);
       setUsers(prev => [...prev, res.data]);
       setError(null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch {
       setError("Erreur lors de l'ajout de l'utilisateur");
       throw new Error("Erreur ajout user");

@@ -3,6 +3,8 @@
     "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
-    "cypress-localstorage-commands": "^2.2.8"
+    "@types/node": "^25.5.0",
+    "cypress-localstorage-commands": "^2.2.8",
+    "typescript": "^5.9.3"
   }
 }
